@@ -3,20 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glint Eraser - Konstlabbet</title>
+    <title>GLINT ERASER - akvarellskiss.se</title>
     <style>
         :root {
-            --bg-color: #1a1a1a;
-            --panel-bg: #262626;
-            --accent-color: #00adb5;
-            --text-color: #eeeeee;
-            --border-color: #3a3a3a;
+            --bg-color: #f7f6f2; /* Ljus, varm bakgrund enligt bild */
+            --panel-bg: #ffffff;
+            --accent-color: #4a3528; /* Den mörkbruna färgen från knappen */
+            --accent-hover: #5c4333;
+            --text-color: #3d2f26;
+            --border-color: #d1cfc7;
+            --input-bg: #ffffff;
         }
 
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             display: flex;
@@ -27,41 +29,46 @@
 
         header {
             background-color: var(--panel-bg);
-            padding: 10px 20px;
+            padding: 15px 20px;
             border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
 
         header h1 {
             margin: 0;
-            font-size: 1.2rem;
-            font-weight: 600;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--accent-color);
             letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
-        header h1 span {
-            color: var(--accent-color);
+        header .subtitle {
+            margin: 5px 0 0 0;
+            font-size: 0.9rem;
+            color: #7a7066;
+            font-style: italic;
         }
 
         .main-container {
             display: flex;
             flex: 1;
-            height: calc(100vh - 50px);
+            height: calc(100vh - 75px);
             overflow: hidden;
         }
 
-        /* Sidebar Toolbar */
+        /* Sidebar / Verktygsfält */
         .toolbar {
-            width: 280px;
+            width: 300px;
             background-color: var(--panel-bg);
             border-right: 1px solid var(--border-color);
-            padding: 20px;
+            padding: 25px 20px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 22px;
             box-sizing: border-box;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.01);
         }
 
         .tool-section {
@@ -71,21 +78,23 @@
         }
 
         .tool-section label {
-            font-size: 0.85rem;
-            color: #aaa;
+            font-size: 0.8rem;
+            color: #7a7066;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
+            font-weight: 600;
         }
 
-        /* UI Elements */
+        /* UI-komponenter i ljus stil */
         .btn {
-            background-color: #333;
+            background-color: #ffffff;
             color: var(--text-color);
             border: 1px solid var(--border-color);
-            padding: 10px 15px;
+            padding: 11px 16px;
             border-radius: 4px;
             cursor: pointer;
             font-weight: 500;
+            font-size: 0.9rem;
             transition: all 0.2s ease;
             display: inline-flex;
             justify-content: center;
@@ -93,64 +102,78 @@
         }
 
         .btn:hover {
-            background-color: #444;
-            border-color: #555;
+            background-color: #fcfbfa;
+            border-color: #b5b2a7;
         }
 
         .btn-primary {
             background-color: var(--accent-color);
-            color: #111;
-            border: none;
+            color: #ffffff;
+            border: 1px solid var(--accent-color);
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .btn-primary:hover {
-            background-color: #00c2cb;
-            box-shadow: 0 0 10px rgba(0, 173, 181, 0.3);
+            background-color: var(--accent-hover);
+            border-color: var(--accent-hover);
         }
 
         .btn:disabled {
-            opacity: 0.4;
+            opacity: 0.3;
             cursor: not-allowed;
+            background-color: #f5f5f5 !important;
+            border-color: #e0e0e0 !important;
+            color: #999 !important;
         }
 
         input[type="file"] {
             display: none;
         }
 
+        /* Skjutreglage (Sliders) */
         input[type="range"] {
             -webkit-appearance: none;
             width: 100%;
-            background: #444;
+            background: #e6e4dd;
             height: 6px;
             border-radius: 3px;
             outline: none;
+            margin: 10px 0;
         }
 
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             background: var(--accent-color);
             cursor: pointer;
+            transition: transform 0.1s;
         }
 
-        /* Workspace Canvas Area */
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        /* Arbetsyta för Canvas */
         .workspace {
             flex: 1;
-            background-color: #111;
+            background-color: var(--bg-color);
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
             overflow: auto;
-            padding: 20px;
+            padding: 30px;
         }
 
         .canvas-container {
             position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
             max-width: 100%;
             max-height: 100%;
         }
@@ -168,37 +191,44 @@
             left: 0;
             z-index: 2;
             cursor: crosshair;
-            mix-blend-mode: normal;
+            vertical-align: top;
+            /* Start-opacitet styrs via JS och synkas med slidern */
         }
 
         .status-bar {
-            font-size: 0.85rem;
-            color: #888;
+            font-size: 0.8rem;
+            color: #8c8278;
             margin-top: auto;
             padding-top: 15px;
             border-top: 1px solid var(--border-color);
+            line-height: 1.4;
         }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>Glint<span>Eraser</span></h1>
-        <div>Local Reflection Healer</div>
+        <h1>Spot De-Glare Tool</h1>
+        <div class="subtitle">a free tool for artists from www.akvarellskiss.se</div>
     </header>
 
     <div class="main-container">
         <div class="toolbar">
             
             <div class="tool-section">
-                <label>1. Import Image</label>
+                <label>1. Source Image</label>
                 <button class="btn" onclick="document.getElementById('fileInput').click()">Load Photo</button>
                 <input type="file" id="fileInput" accept="image/*">
             </div>
 
             <div class="tool-section">
                 <label>2. Brush Size (<span id="brushSizeVal">20</span>px)</label>
-                <input type="range" id="brushSize" min="5" max="100" value="20">
+                <input type="range" id="brushSize" min="5" max="80" value="20">
+            </div>
+
+            <div class="tool-section">
+                <label>3. Mask Visibility (<span id="maskOpacityVal">60</span>%)</label>
+                <input type="range" id="maskOpacity" min="0" max="100" value="60">
             </div>
 
             <div class="tool-section" style="margin-top: 10px;">
@@ -211,7 +241,7 @@
             </div>
 
             <div class="status-bar" id="statusBar">
-                Ready. Load an image to start fixing hot spots.
+                Ready. Load an image to isolate and remove specular reflections or spots.
             </div>
         </div>
 
@@ -227,6 +257,9 @@
         const fileInput = document.getElementById('fileInput');
         const brushSizeInput = document.getElementById('brushSize');
         const brushSizeVal = document.getElementById('brushSizeVal');
+        const maskOpacityInput = document.getElementById('maskOpacity');
+        const maskOpacityVal = document.getElementById('maskOpacityVal');
+        
         const healBtn = document.getElementById('healBtn');
         const clearBtn = document.getElementById('clearBtn');
         const downloadBtn = document.getElementById('downloadBtn');
@@ -241,12 +274,22 @@
         let isDrawing = false;
         let originalImage = null;
 
-        // Sync brush size slider text
+        // Initiera mask-opacitet från sliderns startvärde
+        maskCanvas.style.opacity = maskOpacityInput.value / 100;
+
+        // Uppdatera penselstorleks-text
         brushSizeInput.addEventListener('input', (e) => {
             brushSizeVal.textContent = e.target.value;
         });
 
-        // Load image onto both canvases
+        // Ändra maskens opacitet i realtid (kan dras till 100% för full kontroll)
+        maskOpacityInput.addEventListener('input', (e) => {
+            const opacityValue = e.target.value;
+            maskOpacityVal.textContent = opacityValue;
+            maskCanvas.style.opacity = opacityValue / 100;
+        });
+
+        // Läs in vald bild
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -263,14 +306,13 @@
         });
 
         function setupCanvases(img) {
-            // Constrain display dimensions inside viewport if image is huge
-            const maxW = window.innerWidth - 340;
-            const maxH = window.innerHeight - 90;
+            // Anpassa vyn till arbetsytan
+            const maxW = window.innerWidth - 360;
+            const maxH = window.innerHeight - 120;
             
             let width = img.width;
             let height = img.height;
 
-            // Optional: Downscale logic if needed to prevent performance lag on huge multi-megapixel images
             if (width > maxW || height > maxH) {
                 const ratio = Math.min(maxW / width, maxH / height);
                 width = Math.round(width * ratio);
@@ -292,31 +334,32 @@
             healBtn.disabled = false;
             clearBtn.disabled = false;
             downloadBtn.disabled = false;
-            statusBar.textContent = "Image loaded. Paint red over the glare spots.";
+            statusBar.textContent = "Image loaded. Paint over the reflections, then click 'Erase Glare'.";
         }
 
         function clearMask() {
             maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
-            // We use a semi-transparent red to indicate the mask
-            maskCtx.strokeStyle = 'rgba(255, 0, 0, 0.6)';
-            maskCtx.fillStyle = 'rgba(255, 0, 0, 0.6)';
+            // Vi ritar masken som solid röd i canvasminnet, opaciteten styrs helt via CSS-slidern
+            maskCtx.strokeStyle = 'rgb(215, 40, 40)';
+            maskCtx.fillStyle = 'rgb(215, 40, 40)';
             maskCtx.lineCap = 'round';
             maskCtx.lineJoin = 'round';
         }
 
         clearBtn.addEventListener('click', clearMask);
 
-        // Drawing Mask Logic
+        // Rit-logik för masken
         maskCanvas.addEventListener('mousedown', startDrawing);
         maskCanvas.addEventListener('mousemove', draw);
         window.addEventListener('mouseup', stopDrawing);
 
-        // Touch support for tablets/screens
+        // Touch-stöd för surfplattor/skärmar
         maskCanvas.addEventListener('touchstart', (e) => { startDrawing(e.touches[0]); });
         maskCanvas.addEventListener('touchmove', (e) => { draw(e.touches[0]); e.preventDefault(); });
         maskCanvas.addEventListener('touchend', stopDrawing);
 
         function startDrawing(e) {
+            if (healBtn.disabled) return;
             isDrawing = true;
             maskCtx.lineWidth = brushSizeInput.value;
             const rect = maskCanvas.getBoundingClientRect();
@@ -343,18 +386,17 @@
             isDrawing = false;
         }
 
-        // Inpainting Algoritm ("Melt Inward")
+        // Inward Melting Inpainting-algoritm
         healBtn.addEventListener('click', () => {
-            statusBar.textContent = "Processing... Healing highlights.";
+            statusBar.textContent = "Processing pixels... Melting inward.";
             healBtn.disabled = true;
 
-            // Give UI time to update text before running synchronous heavy processing
             setTimeout(() => {
                 runInpainting();
                 clearMask();
                 healBtn.disabled = false;
-                statusBar.textContent = "Glare removed successfully!";
-            }, 50);
+                statusBar.textContent = "Reflections healed successfully!";
+            }, 40);
         });
 
         function runInpainting() {
@@ -367,31 +409,29 @@
             const pixels = imgData.data;
             const mask = maskData.data;
 
-            // 1. Create array mapping which pixels are masked
             const isMasked = new Uint8Array(w * h);
             let hasMaskedPixels = false;
 
             for (let i = 0; i < mask.length; i += 4) {
-                // If red channel is present and opacity exists, it's masked
-                if (mask[i + 3] > 10) {
+                // Kika om pixeln är rödmålad
+                if (mask[i] > 150 && mask[i+3] > 10) {
                     isMasked[i / 4] = 1;
                     hasMaskedPixels = true;
                 }
             }
 
             if (!hasMaskedPixels) {
-                statusBar.textContent = "No mask found! Paint over the glare first.";
+                statusBar.textContent = "No mask found. Brush over a reflection first.";
                 return;
             }
 
-            // 2. Iterative Inward pixel filling
             let dynamicMask = new Uint8Array(isMasked);
-            let targetPixelsLeft = true;
+            let pixelsLeftToFill = true;
             let iterations = 0;
-            const maxIterations = 40; // Safeguard for performance/size
+            const maxIterations = 50; // Säkerhetsspärr för prestanda
 
-            while (targetPixelsLeft && iterations < maxIterations) {
-                targetPixelsLeft = false;
+            while (pixelsLeftToFill && iterations < maxIterations) {
+                pixelsLeftToFill = false;
                 const nextMask = new Uint8Array(dynamicMask);
                 const currentPixelsState = new Uint8ClampedArray(pixels);
 
@@ -400,14 +440,13 @@
                         const idx = y * w + x;
 
                         if (dynamicMask[idx] === 1) {
-                            targetPixelsLeft = true;
+                            pixelsLeftToFill = true;
 
-                            // Look at immediate cross-neighbors (top, bottom, left, right)
                             let r = 0, g = 0, b = 0, validNeighbors = 0;
                             const neighbors = [idx - w, idx + w, idx - 1, idx + 1];
 
                             for (const nIdx of neighbors) {
-                                if (dynamicMask[nIdx] === 0) { // Neighbor is clean pixel
+                                if (dynamicMask[nIdx] === 0) { // Granne är en ren pixel utanför masken
                                     const p8 = nIdx * 4;
                                     r += currentPixelsState[p8];
                                     g += currentPixelsState[p8 + 1];
@@ -416,13 +455,13 @@
                                 }
                             }
 
-                            // If we hit clean borders, blend them into this masked pixel
+                            // Om vi hittar rena pixlar precis vid kanten, interpolera inåt
                             if (validNeighbors > 0) {
                                 const p4 = idx * 4;
                                 pixels[p4] = r / validNeighbors;
                                 pixels[p4 + 1] = g / validNeighbors;
                                 pixels[p4 + 2] = b / validNeighbors;
-                                nextMask[idx] = 0; // Mark as resolved for next iteration
+                                nextMask[idx] = 0; // Avmaska pixeln inför nästa varv
                             }
                         }
                     }
@@ -431,20 +470,16 @@
                 iterations++;
             }
 
-            // 3. Render the processed canvas state
             ctx.putImageData(imgData, 0, 0);
         }
 
-        // Export/Download Image
+        // Exportera det färdiga resultatet
         downloadBtn.addEventListener('click', () => {
             const dataUrl = imageCanvas.toDataURL('image/jpeg', 0.95);
             const link = document.createElement('a');
-            link.download = 'glint-erased-photo.jpg';
+            link.download = 'deglareskiss.jpg';
             link.href = dataUrl;
             link.click();
-            
-            // Output template hook for your JSON log
-            console.log("Saved canvas output to local environment.");
         });
     </script>
 </body>
