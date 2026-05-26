@@ -2,23 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GLINT ERASER - akvarellskiss.se</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Glint Eraser - akvarellskiss.se</title>
     <style>
         :root {
-            --bg-color: #f7f6f2; /* Ljus, varm bakgrund enligt bild */
+            --bg-color: #f7f6f2; 
             --panel-bg: #ffffff;
-            --accent-color: #4a3528; /* Den mörkbruna färgen från knappen */
+            --accent-color: #4a3528; 
             --accent-hover: #5c4333;
             --text-color: #3d2f26;
             --border-color: #d1cfc7;
-            --input-bg: #ffffff;
+            --active-toggle: #e6e4dd;
         }
 
         body {
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             display: flex;
@@ -29,15 +29,14 @@
 
         header {
             background-color: var(--panel-bg);
-            padding: 15px 20px;
+            padding: 12px 20px;
             border-bottom: 1px solid var(--border-color);
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
 
         header h1 {
             margin: 0;
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             font-weight: 700;
             color: var(--accent-color);
             letter-spacing: 0.5px;
@@ -45,8 +44,8 @@
         }
 
         header .subtitle {
-            margin: 5px 0 0 0;
-            font-size: 0.9rem;
+            margin: 3px 0 0 0;
+            font-size: 0.85rem;
             color: #7a7066;
             font-style: italic;
         }
@@ -54,47 +53,76 @@
         .main-container {
             display: flex;
             flex: 1;
-            height: calc(100vh - 75px);
+            height: calc(100vh - 70px);
             overflow: hidden;
         }
 
-        /* Sidebar / Verktygsfält */
+        /* Sidebar / Toolbar */
         .toolbar {
             width: 300px;
             background-color: var(--panel-bg);
             border-right: 1px solid var(--border-color);
-            padding: 25px 20px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 22px;
+            gap: 16px;
             box-sizing: border-box;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.01);
+            overflow-y: auto;
+            z-index: 10;
         }
 
         .tool-section {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
         }
 
         .tool-section label {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #7a7066;
             text-transform: uppercase;
             letter-spacing: 0.8px;
             font-weight: 600;
         }
 
-        /* UI-komponenter i ljus stil */
+        /* Knapp-grupper (Toggles) */
+        .toggle-group {
+            display: flex;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .toggle-group .btn-toggle {
+            flex: 1;
+            border: none;
+            background: #ffffff;
+            padding: 10px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            color: var(--text-color);
+            transition: background 0.2s;
+        }
+
+        .toggle-group .btn-toggle:not(:last-child) {
+            border-right: 1px solid var(--border-color);
+        }
+
+        .toggle-group .btn-toggle.active {
+            background-color: var(--active-toggle);
+            font-weight: 600;
+        }
+
+        /* Standardknappar */
         .btn {
             background-color: #ffffff;
             color: var(--text-color);
             border: 1px solid var(--border-color);
-            padding: 11px 16px;
+            padding: 10px 14px;
             border-radius: 4px;
             cursor: pointer;
             font-weight: 500;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             transition: all 0.2s ease;
             display: inline-flex;
             justify-content: center;
@@ -112,27 +140,21 @@
             border: 1px solid var(--accent-color);
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .btn-primary:hover {
             background-color: var(--accent-hover);
-            border-color: var(--accent-hover);
         }
 
-        .btn:disabled {
+        .btn:disabled, .toggle-group button:disabled {
             opacity: 0.3;
             cursor: not-allowed;
             background-color: #f5f5f5 !important;
-            border-color: #e0e0e0 !important;
             color: #999 !important;
         }
 
-        input[type="file"] {
-            display: none;
-        }
+        input[type="file"] { display: none; }
 
-        /* Skjutreglage (Sliders) */
         input[type="range"] {
             -webkit-appearance: none;
             width: 100%;
@@ -140,7 +162,7 @@
             height: 6px;
             border-radius: 3px;
             outline: none;
-            margin: 10px 0;
+            margin: 8px 0;
         }
 
         input[type="range"]::-webkit-slider-thumb {
@@ -150,32 +172,61 @@
             border-radius: 50%;
             background: var(--accent-color);
             cursor: pointer;
-            transition: transform 0.1s;
         }
 
-        input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.1);
-        }
-
-        /* Arbetsyta för Canvas */
+        /* Arbetsyta och Canvas-kontroller */
         .workspace {
             flex: 1;
             background-color: var(--bg-color);
+            display: block; /* Viktigt för rullning */
+            position: relative;
+            overflow: auto; /* Aktiverar scrollbars vid 100% zoom */
+            padding: 20px;
+            box-sizing: border-box;
+            -webkit-overflow-scrolling: touch; /* Mjuk scroll på iOS */
+        }
+
+        /* Centrerings-wrapper som tillåter naturlig scroll */
+        .workspace-inner {
             display: flex;
             justify-content: center;
             align-items: center;
-            position: relative;
-            overflow: auto;
-            padding: 30px;
+            min-width: 100%;
+            min-height: 100%;
         }
 
         .canvas-container {
             position: relative;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
             background-color: #ffffff;
-            border: 1px solid var(--border-color);
+            line-height: 0;
+        }
+
+        /* Dynamiska zoom-klasser kontrollerade av JS */
+        .canvas-container.fit-screen {
             max-width: 100%;
-            max-height: 100%;
+            max-height: calc(100vh - 120px);
+            width: auto !important;
+            height: auto !important;
+        }
+
+        .canvas-container.fit-screen canvas {
+            max-width: 100%;
+            max-height: calc(100vh - 120px);
+            width: auto !important;
+            height: auto !important;
+        }
+
+        .canvas-container.zoom-100 {
+            max-width: none;
+            max-height: none;
+        }
+
+        .canvas-container.zoom-100 canvas {
+            max-width: none;
+            max-height: none;
+            width: attr(width px);
+            height: attr(height px);
         }
 
         #imageCanvas {
@@ -190,25 +241,44 @@
             top: 0;
             left: 0;
             z-index: 2;
-            cursor: crosshair;
-            vertical-align: top;
-            /* Start-opacitet styrs via JS och synkas med slidern */
         }
 
         .status-bar {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #8c8278;
             margin-top: auto;
-            padding-top: 15px;
+            padding-top: 12px;
             border-top: 1px solid var(--border-color);
-            line-height: 1.4;
+        }
+
+        /* RESPONSIV DESIGN FÖR MOBILEN */
+        @media (max-width: 768px) {
+            body { height: 100vh; }
+            .main-container { flex-direction: column; height: calc(100vh - 65px); }
+            
+            .toolbar {
+                width: 100%;
+                height: auto;
+                max-height: 220px;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                padding: 12px;
+                gap: 10px;
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .tool-section { gap: 3px; }
+            .tool-section-full { grid-column: span 2; }
+            .status-bar { display: none; }
+            .workspace { padding: 10px; }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>Spot De-Glare Tool</h1>
+        <h1>Glint Eraser</h1>
         <div class="subtitle">a free tool for artists from www.akvarellskiss.se</div>
     </header>
 
@@ -216,39 +286,59 @@
         <div class="toolbar">
             
             <div class="tool-section">
-                <label>1. Source Image</label>
-                <button class="btn" onclick="document.getElementById('fileInput').click()">Load Photo</button>
+                <label>1. Photo</label>
+                <button class="btn" onclick="document.getElementById('fileInput').click()">Load Image</button>
                 <input type="file" id="fileInput" accept="image/*">
             </div>
 
             <div class="tool-section">
-                <label>2. Brush Size (<span id="brushSizeVal">20</span>px)</label>
+                <label>View Size</label>
+                <div class="toggle-group">
+                    <button id="viewFitBtn" class="btn-toggle active" disabled onclick="setViewMode('fit')">Fit</button>
+                    <button id="view100Btn" class="btn-toggle" disabled onclick="setViewMode('100')">100%</button>
+                </div>
+            </div>
+
+            <div class="tool-section">
+                <label>Tool Mode</label>
+                <div class="toggle-group">
+                    <button id="modePaintBtn" class="btn-toggle active" disabled onclick="setToolMode('paint')">🖌️ Paint</button>
+                    <button id="modePanBtn" class="btn-toggle" disabled onclick="setToolMode('pan')">🖐️ Move</button>
+                </div>
+            </div>
+
+            <div class="tool-section">
+                <label>Brush Size (<span id="brushSizeVal">20</span>px)</label>
                 <input type="range" id="brushSize" min="5" max="80" value="20">
             </div>
 
-            <div class="tool-section">
-                <label>3. Mask Visibility (<span id="maskOpacityVal">60</span>%)</label>
+            <div class="tool-section tool-section-full">
+                <label>Mask Visibility (<span id="maskOpacityVal">60</span>%)</label>
                 <input type="range" id="maskOpacity" min="0" max="100" value="60">
             </div>
 
-            <div class="tool-section" style="margin-top: 10px;">
+            <div class="tool-section" style="justify-content: flex-end;">
                 <button id="healBtn" class="btn btn-primary" disabled>Erase Glare</button>
             </div>
 
-            <div class="tool-section">
-                <button id="clearBtn" class="btn" disabled>Clear Mask</button>
-                <button id="downloadBtn" class="btn" disabled>Save Image</button>
+            <div class="tool-section" style="justify-content: flex-end;">
+                <div style="display: flex; gap: 5px; width: 100%;">
+                    <button id="clearBtn" class="btn" style="flex:1;" disabled>Clear</button>
+                    <button id="downloadBtn" class="btn" style="flex:1;" disabled>Save</button>
+                </div>
             </div>
 
             <div class="status-bar" id="statusBar">
-                Ready. Load an image to isolate and remove specular reflections or spots.
+                Ready. Open a high-res photo to remove hot spots and light glints.
             </div>
         </div>
 
-        <div class="workspace">
-            <div class="canvas-container" id="canvasContainer" style="display: none;">
-                <canvas id="imageCanvas"></canvas>
-                <canvas id="maskCanvas"></canvas>
+        <div class="workspace" id="workspace">
+            <div class="workspace-inner">
+                <div class="canvas-container fit-screen" id="canvasContainer" style="display: none;">
+                    <canvas id="imageCanvas"></canvas>
+                    <canvas id="maskCanvas"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -263,6 +353,12 @@
         const healBtn = document.getElementById('healBtn');
         const clearBtn = document.getElementById('clearBtn');
         const downloadBtn = document.getElementById('downloadBtn');
+        const viewFitBtn = document.getElementById('viewFitBtn');
+        const view100Btn = document.getElementById('view100Btn');
+        const modePaintBtn = document.getElementById('modePaintBtn');
+        const modePanBtn = document.getElementById('modePanBtn');
+        
+        const workspace = document.getElementById('workspace');
         const canvasContainer = document.getElementById('canvasContainer');
         const imageCanvas = document.getElementById('imageCanvas');
         const maskCanvas = document.getElementById('maskCanvas');
@@ -272,130 +368,146 @@
         const maskCtx = maskCanvas.getContext('2d', { willReadFrequently: true });
 
         let isDrawing = false;
-        let originalImage = null;
+        let currentToolMode = 'paint'; // 'paint' eller 'pan'
 
-        // Initiera mask-opacitet från sliderns startvärde
         maskCanvas.style.opacity = maskOpacityInput.value / 100;
 
-        // Uppdatera penselstorleks-text
-        brushSizeInput.addEventListener('input', (e) => {
-            brushSizeVal.textContent = e.target.value;
-        });
-
-        // Ändra maskens opacitet i realtid (kan dras till 100% för full kontroll)
+        brushSizeInput.addEventListener('input', (e) => { brushSizeVal.textContent = e.target.value; });
         maskOpacityInput.addEventListener('input', (e) => {
-            const opacityValue = e.target.value;
-            maskOpacityVal.textContent = opacityValue;
-            maskCanvas.style.opacity = opacityValue / 100;
+            maskOpacityVal.textContent = e.target.value;
+            maskCanvas.style.opacity = e.target.value / 100;
         });
 
-        // Läs in vald bild
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
             reader.onload = (event) => {
-                originalImage = new Image();
-                originalImage.onload = () => {
-                    setupCanvases(originalImage);
-                };
-                originalImage.src = event.target.result;
+                const img = new Image();
+                img.onload = () => { setupCanvases(img); };
+                img.src = event.target.result;
             };
             reader.readAsDataURL(file);
         });
 
         function setupCanvases(img) {
-            // Anpassa vyn till arbetsytan
-            const maxW = window.innerWidth - 360;
-            const maxH = window.innerHeight - 120;
-            
-            let width = img.width;
-            let height = img.height;
+            // Sätt ALLTID full upplösning internt i canvasen
+            imageCanvas.width = img.naturalWidth;
+            imageCanvas.height = img.naturalHeight;
+            maskCanvas.width = img.naturalWidth;
+            maskCanvas.height = img.naturalHeight;
 
-            if (width > maxW || height > maxH) {
-                const ratio = Math.min(maxW / width, maxH / height);
-                width = Math.round(width * ratio);
-                height = Math.round(height * ratio);
-            }
-
-            canvasContainer.style.width = width + 'px';
-            canvasContainer.style.height = height + 'px';
-            canvasContainer.style.display = 'block';
-
-            imageCanvas.width = width;
-            imageCanvas.height = height;
-            maskCanvas.width = width;
-            maskCanvas.height = height;
-
-            ctx.drawImage(img, 0, 0, width, height);
+            ctx.drawImage(img, 0, 0);
             clearMask();
 
-            healBtn.disabled = false;
-            clearBtn.disabled = false;
-            downloadBtn.disabled = false;
-            statusBar.textContent = "Image loaded. Paint over the reflections, then click 'Erase Glare'.";
+            canvasContainer.style.display = 'block';
+            setViewMode('fit'); // Starta i skärmanpassat läge
+
+            // Aktivera alla kontroller
+            [healBtn, clearBtn, downloadBtn, viewFitBtn, view100Btn, modePaintBtn, modePanBtn].forEach(b => b.disabled = false);
+            statusBar.textContent = "Loaded. Switch to '100%' view if you need close-up precision.";
+        }
+
+        function setViewMode(mode) {
+            if (mode === 'fit') {
+                viewFitBtn.classList.add('active');
+                view100Btn.classList.remove('active');
+                canvasContainer.className = "canvas-container fit-screen";
+            } else {
+                view100Btn.classList.add('active');
+                viewFitBtn.classList.remove('active');
+                canvasContainer.className = "canvas-container zoom-100";
+            }
+        }
+
+        function setToolMode(mode) {
+            currentToolMode = mode;
+            if (mode === 'paint') {
+                modePaintBtn.classList.add('active');
+                modePanBtn.classList.remove('active');
+                maskCanvas.style.pointerEvents = 'auto'; // Tillåt ritning
+            } else {
+                modePanBtn.classList.add('active');
+                modePaintBtn.classList.remove('active');
+                maskCanvas.style.pointerEvents = 'none'; // Släpp igenom touch-gester till skrollning
+            }
         }
 
         function clearMask() {
             maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
-            // Vi ritar masken som solid röd i canvasminnet, opaciteten styrs helt via CSS-slidern
-            maskCtx.strokeStyle = 'rgb(215, 40, 40)';
-            maskCtx.fillStyle = 'rgb(215, 40, 40)';
+            maskCtx.strokeStyle = 'rgb(220, 30, 30)';
+            maskCtx.fillStyle = 'rgb(220, 30, 30)';
             maskCtx.lineCap = 'round';
             maskCtx.lineJoin = 'round';
         }
-
         clearBtn.addEventListener('click', clearMask);
 
-        // Rit-logik för masken
-        maskCanvas.addEventListener('mousedown', startDrawing);
-        maskCanvas.addEventListener('mousemove', draw);
-        window.addEventListener('mouseup', stopDrawing);
+        // Räkna ut exakta koordinater oavsett om skärmen är nerskalad eller inzoomad
+        function getPreciseCoords(e) {
+            const rect = maskCanvas.getBoundingClientRect();
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            if (!clientX || !clientY) return null;
 
-        // Touch-stöd för surfplattor/skärmar
-        maskCanvas.addEventListener('touchstart', (e) => { startDrawing(e.touches[0]); });
-        maskCanvas.addEventListener('touchmove', (e) => { draw(e.touches[0]); e.preventDefault(); });
-        maskCanvas.addEventListener('touchend', stopDrawing);
+            // Beräkna skalningsfaktorn mellan CSS-visning och faktiska pixlar
+            const scaleX = maskCanvas.width / rect.width;
+            const scaleY = maskCanvas.height / rect.height;
+
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
 
         function startDrawing(e) {
-            if (healBtn.disabled) return;
+            if (currentToolMode !== 'paint') return;
             isDrawing = true;
-            maskCtx.lineWidth = brushSizeInput.value;
-            const rect = maskCanvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+            maskCtx.lineWidth = brushSizeInput.value * (maskCanvas.width / maskCanvas.getBoundingClientRect().width);
             
+            const coords = getPreciseCoords(e);
+            if (!coords) return;
+
             maskCtx.beginPath();
-            maskCtx.moveTo(x, y);
-            maskCtx.lineTo(x, y);
+            maskCtx.moveTo(coords.x, coords.y);
+            maskCtx.lineTo(coords.x, coords.y);
             maskCtx.stroke();
         }
 
         function draw(e) {
-            if (!isDrawing) return;
-            const rect = maskCanvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+            if (!isDrawing || currentToolMode !== 'paint') return;
+            const coords = getPreciseCoords(e);
+            if (!coords) return;
 
-            maskCtx.lineTo(x, y);
+            // Förhindra mobil-skrollning ENBART när man faktiskt ritar masken
+            if(e.cancelable) e.preventDefault();
+
+            maskCtx.lineTo(coords.x, coords.y);
             maskCtx.stroke();
         }
 
-        function stopDrawing() {
-            isDrawing = false;
-        }
+        function stopDrawing() { isDrawing = false; }
 
-        // Inward Melting Inpainting-algoritm
+        // Event Listeners för både Mus och Touch
+        maskCanvas.addEventListener('mousedown', startDrawing);
+        maskCanvas.addEventListener('mousemove', draw);
+        window.addEventListener('mouseup', stopDrawing);
+
+        maskCanvas.addEventListener('touchstart', (e) => { startDrawing(e); });
+        maskCanvas.addEventListener('touchmove', (e) => { draw(e); }, { passive: false });
+        maskCanvas.addEventListener('touchend', stopDrawing);
+
+        // Inward Melting Algoritm
         healBtn.addEventListener('click', () => {
-            statusBar.textContent = "Processing pixels... Melting inward.";
+            statusBar.textContent = "Processing... Melting reflections.";
             healBtn.disabled = true;
 
             setTimeout(() => {
                 runInpainting();
                 clearMask();
                 healBtn.disabled = false;
-                statusBar.textContent = "Reflections healed successfully!";
+                statusBar.textContent = "Hot spots fixed!";
             }, 40);
         });
 
@@ -413,22 +525,18 @@
             let hasMaskedPixels = false;
 
             for (let i = 0; i < mask.length; i += 4) {
-                // Kika om pixeln är rödmålad
                 if (mask[i] > 150 && mask[i+3] > 10) {
                     isMasked[i / 4] = 1;
                     hasMaskedPixels = true;
                 }
             }
 
-            if (!hasMaskedPixels) {
-                statusBar.textContent = "No mask found. Brush over a reflection first.";
-                return;
-            }
+            if (!hasMaskedPixels) return;
 
             let dynamicMask = new Uint8Array(isMasked);
             let pixelsLeftToFill = true;
             let iterations = 0;
-            const maxIterations = 50; // Säkerhetsspärr för prestanda
+            const maxIterations = 60; 
 
             while (pixelsLeftToFill && iterations < maxIterations) {
                 pixelsLeftToFill = false;
@@ -446,7 +554,7 @@
                             const neighbors = [idx - w, idx + w, idx - 1, idx + 1];
 
                             for (const nIdx of neighbors) {
-                                if (dynamicMask[nIdx] === 0) { // Granne är en ren pixel utanför masken
+                                if (dynamicMask[nIdx] === 0) {
                                     const p8 = nIdx * 4;
                                     r += currentPixelsState[p8];
                                     g += currentPixelsState[p8 + 1];
@@ -455,13 +563,12 @@
                                 }
                             }
 
-                            // Om vi hittar rena pixlar precis vid kanten, interpolera inåt
                             if (validNeighbors > 0) {
                                 const p4 = idx * 4;
                                 pixels[p4] = r / validNeighbors;
                                 pixels[p4 + 1] = g / validNeighbors;
                                 pixels[p4 + 2] = b / validNeighbors;
-                                nextMask[idx] = 0; // Avmaska pixeln inför nästa varv
+                                nextMask[idx] = 0; 
                             }
                         }
                     }
@@ -469,15 +576,13 @@
                 dynamicMask = nextMask;
                 iterations++;
             }
-
             ctx.putImageData(imgData, 0, 0);
         }
 
-        // Exportera det färdiga resultatet
         downloadBtn.addEventListener('click', () => {
             const dataUrl = imageCanvas.toDataURL('image/jpeg', 0.95);
             const link = document.createElement('a');
-            link.download = 'deglareskiss.jpg';
+            link.download = 'glint-erased.jpg';
             link.href = dataUrl;
             link.click();
         });
