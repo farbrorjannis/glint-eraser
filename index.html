@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glint Eraser - Konstlabbet</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --panel-bg: #262626;
+            --accent-color: #00adb5;
+            --text-color: #eeeeee;
+            --border-color: #3a3a3a;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: var(--panel-bg);
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        header h1 span {
+            color: var(--accent-color);
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 50px);
+            overflow: hidden;
+        }
+
+        /* Sidebar Toolbar */
+        .toolbar {
+            width: 280px;
+            background-color: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+
+        .tool-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .tool-section label {
+            font-size: 0.85rem;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* UI Elements */
+        .btn {
+            background-color: #333;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn:hover {
+            background-color: #444;
+            border-color: #555;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: #111;
+            border: none;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background-color: #00c2cb;
+            box-shadow: 0 0 10px rgba(0, 173, 181, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: #444;
+            height: 6px;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+        }
+
+        /* Workspace Canvas Area */
+        .workspace {
+            flex: 1;
+            background-color: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: auto;
+            padding: 20px;
+        }
+
+        .canvas-container {
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        #imageCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        #maskCanvas {
+            position: relative;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            cursor: crosshair;
+            mix-blend-mode: normal;
+        }
+
+        .status-bar {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: auto;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Glint<span>Eraser</span></h1>
+        <div>Local Reflection Healer</div>
+    </header>
+
+    <div class="main-container">
+        <div class="toolbar">
+            
+            <div class="tool-section">
+                <label>1. Import Image</label>
+                <button class="btn" onclick="document.getElementById('fileInput').click()">Load Photo</button>
+                <input type="file" id="fileInput" accept="image/*">
+            </div>
+
+            <div class="tool-section">
+                <label>2. Brush Size (<span id="brushSizeVal">20</span>px)</label>
+                <input type="range" id="brushSize" min="5" max="100" value="20">
+            </div>
+
+            <div class="tool-section" style="margin-top: 10px;">
+                <button id="healBtn" class="btn btn-primary" disabled>Erase Glare</button>
+            </div>
+
+            <div class="tool-section">
+                <button id="clearBtn" class="btn" disabled>Clear Mask</button>
+                <button id="downloadBtn" class="btn" disabled>Save Image</button>
+            </div>
+
+            <div class="status-bar" id="statusBar">
+                Ready. Load an image to start fixing hot spots.
+            </div>
+        </div>
+
+        <div class="workspace">
+            <div class="canvas-container" id="canvasContainer" style="display: none;">
+                <canvas id="imageCanvas"></canvas>
+                <canvas id="maskCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const brushSizeInput = document.getElementById('brushSize');
+        const brushSizeVal = document.getElementById('brushSizeVal');
+        const healBtn = document.getElementById('healBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const canvasContainer = document.getElementById('canvasContainer');
+        const imageCanvas = document.getElementById('imageCanvas');
+        const maskCanvas = document.getElementById('maskCanvas');
+        const statusBar = document.getElementById('statusBar');
+
+        const ctx = imageCanvas.getContext('2d', { willReadFrequently: true });
+        const maskCtx = maskCanvas.getContext('2d', { willReadFrequently: true });
+
+        let isDrawing = false;
+        let originalImage = null;
+
+        // Sync brush size slider text
+        brushSizeInput.addEventListener('input', (e) => {
+            brushSizeVal.textContent = e.target.value;
+        });
+
+        // Load image onto both canvases
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                originalImage = new Image();
+                originalImage.onload = () => {
+                    setupCanvases(originalImage);
+                };
+                originalImage.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function setupCanvases(img) {
+            // Constrain display dimensions inside viewport if image is huge
+            const maxW = window.innerWidth - 340;
+            const maxH = window.innerHeight - 90;
+            
+            let width = img.width;
+            let height = img.height;
+
+            // Optional: Downscale logic if needed to prevent performance lag on huge multi-megapixel images
+            if (width > maxW || height > maxH) {
+                const ratio = Math.min(maxW / width, maxH / height);
+                width = Math.round(width * ratio);
+                height = Math.round(height * ratio);
+            }
+
+            canvasContainer.style.width = width + 'px';
+            canvasContainer.style.height = height + 'px';
+            canvasContainer.style.display = 'block';
+
+            imageCanvas.width = width;
+            imageCanvas.height = height;
+            maskCanvas.width = width;
+            maskCanvas.height = height;
+
+            ctx.drawImage(img, 0, 0, width, height);
+            clearMask();
+
+            healBtn.disabled = false;
+            clearBtn.disabled = false;
+            downloadBtn.disabled = false;
+            statusBar.textContent = "Image loaded. Paint red over the glare spots.";
+        }
+
+        function clearMask() {
+            maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
+            // We use a semi-transparent red to indicate the mask
+            maskCtx.strokeStyle = 'rgba(255, 0, 0, 0.6)';
+            maskCtx.fillStyle = 'rgba(255, 0, 0, 0.6)';
+            maskCtx.lineCap = 'round';
+            maskCtx.lineJoin = 'round';
+        }
+
+        clearBtn.addEventListener('click', clearMask);
+
+        // Drawing Mask Logic
+        maskCanvas.addEventListener('mousedown', startDrawing);
+        maskCanvas.addEventListener('mousemove', draw);
+        window.addEventListener('mouseup', stopDrawing);
+
+        // Touch support for tablets/screens
+        maskCanvas.addEventListener('touchstart', (e) => { startDrawing(e.touches[0]); });
+        maskCanvas.addEventListener('touchmove', (e) => { draw(e.touches[0]); e.preventDefault(); });
+        maskCanvas.addEventListener('touchend', stopDrawing);
+
+        function startDrawing(e) {
+            isDrawing = true;
+            maskCtx.lineWidth = brushSizeInput.value;
+            const rect = maskCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            maskCtx.beginPath();
+            maskCtx.moveTo(x, y);
+            maskCtx.lineTo(x, y);
+            maskCtx.stroke();
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const rect = maskCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            maskCtx.lineTo(x, y);
+            maskCtx.stroke();
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        // Inpainting Algoritm ("Melt Inward")
+        healBtn.addEventListener('click', () => {
+            statusBar.textContent = "Processing... Healing highlights.";
+            healBtn.disabled = true;
+
+            // Give UI time to update text before running synchronous heavy processing
+            setTimeout(() => {
+                runInpainting();
+                clearMask();
+                healBtn.disabled = false;
+                statusBar.textContent = "Glare removed successfully!";
+            }, 50);
+        });
+
+        function runInpainting() {
+            const w = imageCanvas.width;
+            const h = imageCanvas.height;
+
+            const imgData = ctx.getImageData(0, 0, w, h);
+            const maskData = maskCtx.getImageData(0, 0, w, h);
+            
+            const pixels = imgData.data;
+            const mask = maskData.data;
+
+            // 1. Create array mapping which pixels are masked
+            const isMasked = new Uint8Array(w * h);
+            let hasMaskedPixels = false;
+
+            for (let i = 0; i < mask.length; i += 4) {
+                // If red channel is present and opacity exists, it's masked
+                if (mask[i + 3] > 10) {
+                    isMasked[i / 4] = 1;
+                    hasMaskedPixels = true;
+                }
+            }
+
+            if (!hasMaskedPixels) {
+                statusBar.textContent = "No mask found! Paint over the glare first.";
+                return;
+            }
+
+            // 2. Iterative Inward pixel filling
+            let dynamicMask = new Uint8Array(isMasked);
+            let targetPixelsLeft = true;
+            let iterations = 0;
+            const maxIterations = 40; // Safeguard for performance/size
+
+            while (targetPixelsLeft && iterations < maxIterations) {
+                targetPixelsLeft = false;
+                const nextMask = new Uint8Array(dynamicMask);
+                const currentPixelsState = new Uint8ClampedArray(pixels);
+
+                for (let y = 1; y < h - 1; y++) {
+                    for (let x = 1; x < w - 1; x++) {
+                        const idx = y * w + x;
+
+                        if (dynamicMask[idx] === 1) {
+                            targetPixelsLeft = true;
+
+                            // Look at immediate cross-neighbors (top, bottom, left, right)
+                            let r = 0, g = 0, b = 0, validNeighbors = 0;
+                            const neighbors = [idx - w, idx + w, idx - 1, idx + 1];
+
+                            for (const nIdx of neighbors) {
+                                if (dynamicMask[nIdx] === 0) { // Neighbor is clean pixel
+                                    const p8 = nIdx * 4;
+                                    r += currentPixelsState[p8];
+                                    g += currentPixelsState[p8 + 1];
+                                    b += currentPixelsState[p8 + 2];
+                                    validNeighbors++;
+                                }
+                            }
+
+                            // If we hit clean borders, blend them into this masked pixel
+                            if (validNeighbors > 0) {
+                                const p4 = idx * 4;
+                                pixels[p4] = r / validNeighbors;
+                                pixels[p4 + 1] = g / validNeighbors;
+                                pixels[p4 + 2] = b / validNeighbors;
+                                nextMask[idx] = 0; // Mark as resolved for next iteration
+                            }
+                        }
+                    }
+                }
+                dynamicMask = nextMask;
+                iterations++;
+            }
+
+            // 3. Render the processed canvas state
+            ctx.putImageData(imgData, 0, 0);
+        }
+
+        // Export/Download Image
+        downloadBtn.addEventListener('click', () => {
+            const dataUrl = imageCanvas.toDataURL('image/jpeg', 0.95);
+            const link = document.createElement('a');
+            link.download = 'glint-erased-photo.jpg';
+            link.href = dataUrl;
+            link.click();
+            
+            // Output template hook for your JSON log
+            console.log("Saved canvas output to local environment.");
+        });
+    </script>
+</body>
+</html>
